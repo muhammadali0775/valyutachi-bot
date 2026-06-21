@@ -1,1 +1,1 @@
-python-telegram-bo==21.9 requests pytz
+python-telegram-bot==21.9 requests pytz
