@@ -10,6 +10,11 @@ import pytz
 
 BOT_TOKEN = "8869250752:AAEsqGxLO-3yOkw00XqWJSabChso-XHFFzE"
 ADMIN_ID = 6165734345
+REKLAMA = {
+    "matn": "",
+    "boshlanish": "",
+    "tugash": "",
+}
 SUBS_FILE = "subscribers.json"
 TASHKENT = pytz.timezone("Asia/Tashkent")
 
@@ -53,10 +58,14 @@ def build_message():
             f"🏦 Markaziy Bank\n🕐 {now}")
 
 async def send_to_all(bot):
+    from datetime import datetime
     msg = build_message()
+    hozir = datetime.now(TASHKENT).strftime("%d.%m.%Y %H:%M")
     for chat_id in load_subscribers():
         try:
             await bot.send_message(chat_id=chat_id, text=msg, parse_mode="Markdown")
+            if REKLAMA["matn"] and REKLAMA["boshlanish"] <= hozir <= REKLAMA["tugash"]:
+                await bot.send_message(chat_id=chat_id, text=f"📣 *Reklama*\n\n{REKLAMA['matn']}", parse_mode="Markdown")
         except Exception as e:
             print(f"Xato: {e}")
 
@@ -75,18 +84,14 @@ async def reklama(update, context):
     if update.effective_chat.id != ADMIN_ID:
         await update.message.reply_text("❌ Ruxsat yo'q.")
         return
-    matn = " ".join(context.args)
-    if not matn:
-        await update.message.reply_text("Misol: /reklama Sizning reklamangiz matni")
+    args = context.args
+    if len(args) < 3:
+        await update.message.reply_text("Misol: /reklama 27.06.2026-09:00 29.06.2026-21:00 Reklama matni")
         return
-    subscribers = load_subscribers()
-    await update.message.reply_text(f"📤 {len(subscribers)} ta obunachiga yuborilmoqda...")
-    for chat_id in subscribers:
-        try:
-            await context.bot.send_message(chat_id=chat_id, text=f"📢 *Reklama*\n\n{matn}", parse_mode="Markdown")
-        except:
-            pass
-    await update.message.reply_text("✅ Reklama yuborildi!")
+    REKLAMA["boshlanish"] = args[0]
+    REKLAMA["tugash"] = args[1]
+    REKLAMA["matn"] = " ".join(args[2:])
+    await update.message.reply_text(f"✅ Reklama qo'shildi!\n{args[0]} dan {args[1]} gacha chiqadi.")
 
 async def stats(update, context):
     if update.effective_chat.id != ADMIN_ID:
