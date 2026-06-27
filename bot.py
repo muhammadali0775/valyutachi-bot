@@ -93,7 +93,7 @@ async def stats(update, context):
         await update.message.reply_text("❌ Ruxsat yo'q.")
         return
     count = len(load_subscribers())
-    await update.message.reply_text(f"👥 Obunachiler soni: *{count}* ta", parse_mode="Markdown")
+    await update.message.reply_text(f"👥 Obunachilar soni: *{count}* ta", parse_mode="Markdown")
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
