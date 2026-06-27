@@ -9,7 +9,7 @@ from telegram import Update
 import pytz
 
 BOT_TOKEN = "8869250752:AAEsqGxLO-3yOkw00XqWJSabChso-XHFFzE"
-
+ADMIN_ID = 6165734345
 SUBS_FILE = "subscribers.json"
 TASHKENT = pytz.timezone("Asia/Tashkent")
 
@@ -49,6 +49,7 @@ def build_message():
     now = datetime.now(TASHKENT).strftime("%H:%M, %d.%m.%Y")
     return (f"💵 *Dollar kursi — {date}*\n\n"
             f"1 USD = *{rate:,.0f} UZS*\n\n"
+            f"100 USD = *{rate*100:,.0f} UZS*\n\n"    
             f"🏦 Markaziy Bank\n🕐 {now}")
 
 async def send_to_all(bot):
@@ -69,12 +70,38 @@ async def kurs(update, context):
 async def stop(update, context):
     remove_subscriber(update.effective_chat.id)
     await update.message.reply_text("Obunadan chiqdingiz. /start bilan qayta qo'shiling.")
+    
+async def reklama(update, context):
+    if update.effective_chat.id != ADMIN_ID:
+        await update.message.reply_text("❌ Ruxsat yo'q.")
+        return
+    matn = " ".join(context.args)
+    if not matn:
+        await update.message.reply_text("Misol: /reklama Sizning reklamangiz matni")
+        return
+    subscribers = load_subscribers()
+    await update.message.reply_text(f"📤 {len(subscribers)} ta obunachiga yuborilmoqda...")
+    for chat_id in subscribers:
+        try:
+            await context.bot.send_message(chat_id=chat_id, text=f"📢 *Reklama*\n\n{matn}", parse_mode="Markdown")
+        except:
+            pass
+    await update.message.reply_text("✅ Reklama yuborildi!")
 
+async def stats(update, context):
+    if update.effective_chat.id != ADMIN_ID:
+        await update.message.reply_text("❌ Ruxsat yo'q.")
+        return
+    count = len(load_subscribers())
+    await update.message.reply_text(f"👥 Obunachiler soni: *{count}* ta", parse_mode="Markdown")
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("kurs", kurs))
     app.add_handler(CommandHandler("stop", stop))
+    
+    app.add_handler(CommandHandler("reklama", reklama))
+    app.add_handler(CommandHandler("stats", stats))
 
     async def daily_sender(bot):
         from datetime import timedelta
