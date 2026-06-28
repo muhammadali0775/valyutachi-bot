@@ -8,6 +8,9 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram import Update
 import pytz
 
+from groq import Groq
+GROQ_KEY = "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"
+groq_client = Groq(api_key=GROQ_KEY)
 BOT_TOKEN = "8869250752:AAEsqGxLO-3yOkw00XqWJSabChso-XHFFzE"
 ADMIN_ID = 6165734345
 REKLAMA = {
@@ -79,7 +82,22 @@ async def kurs(update, context):
 async def stop(update, context):
     remove_subscriber(update.effective_chat.id)
     await update.message.reply_text("Obunadan chiqdingiz. /start bilan qayta qo'shiling.")
-    
+
+async def ai(update, context):
+    savol = " ".join(context.args)
+    if not savol:
+        await update.message.reply_text("Misol: /ai dollar kursi haqida nima deysiz?")
+        return
+    await update.message.reply_text("🤔 O'ylamoqda...")
+    try:
+        javob = groq_client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[{"role": "user", "content": savol}]
+        )
+        await update.message.reply_text(javob.choices[0].message.content)
+    except Exception as e:
+        await update.message.reply_text("Xatolik yuz berdi.")
+        
 async def reklama(update, context):
     if update.effective_chat.id != ADMIN_ID:
         await update.message.reply_text("❌ Ruxsat yo'q.")
@@ -107,7 +125,7 @@ def main():
     
     app.add_handler(CommandHandler("reklama", reklama))
     app.add_handler(CommandHandler("stats", stats))
-
+app.add_handler(CommandHandler("ai", ai))
     async def daily_sender(bot):
         from datetime import timedelta
         while True:
