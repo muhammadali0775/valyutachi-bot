@@ -125,7 +125,8 @@ def main():
     
     app.add_handler(CommandHandler("reklama", reklama))
     app.add_handler(CommandHandler("stats", stats))
-app.add_handler(CommandHandler("ai", ai))
+    app.add_handler(CommandHandler("ai", ai))
+
     async def daily_sender(bot):
         from datetime import timedelta
         while True:
