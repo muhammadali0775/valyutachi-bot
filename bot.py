@@ -96,7 +96,7 @@ async def ai(update, context):
         )
         await update.message.reply_text(javob.choices[0].message.content)
     except Exception as e:
-        await update.message.reply_text("Xatolik yuz berdi.")
+        await update.message.reply_text(f"Xatolik: {str(e)}")
         
 async def reklama(update, context):
     if update.effective_chat.id != ADMIN_ID:
